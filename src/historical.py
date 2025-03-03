@@ -4,9 +4,9 @@ from datetime import datetime
 import pandas as pd
 
 class HistoricalDataHandler(DataHandler):
-    def __init__(self, db_name='options_data.db', stock_list=None):
-        super().__init__(db_name)
-        self.stock_list = stock_list if stock_list else []
+    def __init__(self, config_path='config.yaml'):
+        super().__init__(config_path)
+        self.stock_list = self.config['stocks']
 
     def fetch_and_store_options_data(self):
         for ticker_symbol in self.stock_list:
@@ -29,7 +29,6 @@ class HistoricalDataHandler(DataHandler):
 
                     # Add current timestamp
                     options_data['retrieval_date'] = datetime.now()
-
                     options_data['ticker'] = ticker_symbol
 
                     # Insert data into the database

@@ -1,13 +1,24 @@
 import sqlite3
 import pandas as pd
+import os
+import yaml
 
 
 class DataHandler:
-    def __init__(self, db_name='options_data.db'):
-        self.db_name = db_name
+    def __init__(self, config_path='config.yaml'):
+        self.config = self._load_config(config_path)
+        self.db_name = self.config['database']
+        self.output_folder = self.config['output_folder']
+        
+        os.makedirs(self.output_folder, exist_ok=True)  # Ensure output folder exists
+        
         self.conn = sqlite3.connect(self.db_name)
         self.cursor = self.conn.cursor()
         self._create_table()
+
+    def _load_config(self, config_path):
+        with open(config_path, 'r') as file:
+            return yaml.safe_load(file)
 
     def _create_table(self):
         self.cursor.execute('''
@@ -31,7 +42,7 @@ class DataHandler:
             expiration_date TEXT,
             retrieval_date TEXT,
             ticker TEXT,
-            UNIQUE(contractSymbol, lastTradeDate)  -- Add UNIQUE constraint
+            UNIQUE(contractSymbol, lastTradeDate)
         )
         ''')
         self.conn.commit()
@@ -70,7 +81,8 @@ class DataHandler:
             ))
         self.conn.commit()
 
-    def export_to_csv(self, csv_file='options_data_export.csv'):
+    def export_to_csv(self):
+        csv_file = os.path.join(self.output_folder, 'options_data_export.csv')
         query = 'SELECT * FROM options'
         df = pd.read_sql_query(query, self.conn)
         df.to_csv(csv_file, index=False)

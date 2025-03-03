@@ -1,0 +1,8 @@
+database: "options_data.db"
+output_folder: /home/chris/options_1/data
+stocks:
+  - AAPL
+  - MSFT
+  - GOOGL
+  - SPY
+  - TSLA
