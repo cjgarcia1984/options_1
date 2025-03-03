@@ -9,7 +9,6 @@ class DataHandler:
         self.cursor = self.conn.cursor()
         self._create_table()
 
-
     def _create_table(self):
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS options (
@@ -30,7 +29,9 @@ class DataHandler:
             currency TEXT,
             option_type TEXT,
             expiration_date TEXT,
-            retrieval_date TEXT
+            retrieval_date TEXT,
+            ticker TEXT,
+            UNIQUE(contractSymbol, lastTradeDate)  -- Add UNIQUE constraint
         )
         ''')
         self.conn.commit()
@@ -68,7 +69,6 @@ class DataHandler:
                 row['retrieval_date'], row['ticker']
             ))
         self.conn.commit()
-
 
     def export_to_csv(self, csv_file='options_data_export.csv'):
         query = 'SELECT * FROM options'
