@@ -10,7 +10,7 @@ class DataHandler:
         self.db_name = self.config['database']
         self.output_folder = self.config['output_folder']
         
-        os.makedirs(self.output_folder, exist_ok=True)  # Ensure output folder exists
+        os.makedirs(self.output_folder, exist_ok=True)
         
         self.conn = sqlite3.connect(self.db_name)
         self.cursor = self.conn.cursor()
