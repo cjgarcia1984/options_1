@@ -29,6 +29,7 @@ class HistoricalDataHandler(DataHandler):
 
                     # Add current timestamp
                     options_data['retrieval_date'] = datetime.now()
+                    options_data['lastTradeDate'] = options_data['lastTradeDate'].dt.tz_localize(None)
                     options_data['ticker'] = ticker_symbol
 
                     # Insert data into the database
