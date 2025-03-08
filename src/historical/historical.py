@@ -1,9 +1,9 @@
-from src.data import DataHandler
+from src.historical.db_handler import DBHandler
 import yfinance as yf
 from datetime import datetime
 import pandas as pd
 
-class HistoricalDataHandler(DataHandler):
+class HistoricalDataHandler(DBHandler):
     def __init__(self, config_path='config.yaml'):
         super().__init__(config_path)
         self.stock_list = self.config['stocks']

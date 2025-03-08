@@ -4,7 +4,7 @@ import os
 import yaml
 
 
-class DataHandler:
+class DBHandler:
     def __init__(self, config_path='config.yaml'):
         self.config = self._load_config(config_path)
         self.db_name = self.config['database']
