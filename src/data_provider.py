@@ -64,21 +64,9 @@ class DataProvider:
         df["Low"] = df[["Close", "bid", "ask"]].min(axis=1)
 
         df_resampled = (
-            df[
-                [
-                    "Open",
-                    "High",
-                    "Low",
-                    "Close",
-                    "volume",
-                    "openInterest",
-                    "impliedVolatility",
-                    "percentChange",
-                    "change",
-                    "inTheMoney",
-                ]
-            ]
-            .resample(interval)
+            df.resample(
+                interval.replace("T", "min")
+            )  # Replace deprecated 'T' with 'min'
             .agg(
                 {
                     "Open": "first",
@@ -118,7 +106,7 @@ class DataProvider:
         df["Low"] = df["Close"]
 
         df_resampled = (
-            df.resample(interval)
+            df.resample(interval.replace("T", "min"))
             .agg({"Open": "first", "High": "max", "Low": "min", "Close": "last"})
             .ffill()
         )
@@ -128,24 +116,25 @@ class DataProvider:
     def create_data(self, contracts, reference_date=None):
         """
         Combines multiple contracts into a single DataFrame for backtesting.
-        
+
         :param contracts: List of contracts (each containing ticker, option_type, expiration_date, strike).
         :param reference_date: The date from which to start the backtest.
         :return: Processed DataFrame.
         """
         dfs = [self.load_contract(**contract) for contract in contracts]
         dfs = [df for df in dfs if df is not None]  # Filter out any None values
-    
+
         if not dfs:
             print("No valid contract data available.")
             return None
-    
-        combined_df = pd.concat(dfs, axis=0).sort_index()  # Use `pd.concat()` instead of `sum()`
+
+        combined_df = pd.concat(
+            dfs, axis=0
+        ).sort_index()  # Use `pd.concat()` instead of `sum()`
         combined_df.dropna(inplace=True)
-    
+
         # Ensure we only test from the reference date onward
         if reference_date:
             combined_df = combined_df.loc[combined_df.index >= reference_date]
-    
+
         return combined_df
-    
