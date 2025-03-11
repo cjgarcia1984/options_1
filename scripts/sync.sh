@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # Directories and File Paths
-SOURCE="/home/chris/options_1/data/options_data.db"
-DEST="/mnt/c/options_data"
-WORKING_COPY="${DEST}/options_data.db"
-TEMP_SOURCE="${SOURCE}_temp.db"
+DESTINATION="/home/chris/options_1/data/options_data.db"
+SOURCE="/mnt/t/"
+WORKING_COPY="${SOURCE}/options_data.db"
+TEMP_DESTINATION="${DESTINATION}_temp.db"
 
-# Ensure the source directory exists
-mkdir -p "$(dirname "${SOURCE}")"
+# Ensure the DESTINATION directory exists
+mkdir -p "$(dirname "${DESTINATION}")"
 
-# Copy the working copy to a temporary file in the source directory
-cp "${WORKING_COPY}" "${TEMP_SOURCE}"
+# Copy the working copy to a temporary file in the DESTINATION directory
+cp "${WORKING_COPY}" "${TEMP_DESTINATION}"
 
-# Move the temporary file to the source location (atomic operation)
-mv "${TEMP_SOURCE}" "${SOURCE}"
+# Move the temporary file to the DESTINATION location (atomic operation)
+mv "${TEMP_DESTINATION}" "${DESTINATION}"
 
-echo "Database synchronized to source at ${SOURCE}"
+echo "Database synchronized to DESTINATION at ${DESTINATION}"
