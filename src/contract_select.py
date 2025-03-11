@@ -2,6 +2,7 @@ import yfinance as yf
 import sqlite3
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
+import pandas as pd
 
 # from src.broker_api import SchwabAPI  # Assuming you have a broker API wrapper
 
@@ -40,7 +41,7 @@ class ContractSelector(ABC):
 
     def select_contract(self, ticker, reference_date=None, max_results=3):
         """
-        Selects the best ATM contracts for the given ticker.
+        Selects the most liquid and actively traded ATM contracts.
 
         :param ticker: Stock ticker symbol.
         :param reference_date: Date of contract selection.
@@ -57,7 +58,7 @@ class ContractSelector(ABC):
         if not contracts:
             return []  # No contracts available
 
-        # Get the stock price based on execution rules
+        # ✅ Get the stock price based on execution rules
         stock_price = (
             self._get_historical_spot_price(ticker, reference_date, self.use_open)
             if not self.live
@@ -70,26 +71,69 @@ class ContractSelector(ABC):
             )
             return []
 
-        selected_contracts = []
+        all_contracts = []
 
-        for strike in sorted(contracts.keys(), key=lambda s: abs(s - stock_price)):
-            for expiration_date in sorted(contracts[strike].keys()):
-                contract_data = contracts[strike][expiration_date]
+        # ✅ Flatten contract dictionary for sorting
+        for strike in contracts.keys():
+            for expiration_date, contract_data in contracts[strike].items():
                 if "call" in contract_data and "put" in contract_data:
-                    selected_contracts.append(
+                    call_data = contract_data["call"]
+                    put_data = contract_data["put"]
+
+                    # ✅ Convert to numeric safely using `pd.to_numeric(errors="coerce")`
+                    call_volume = pd.to_numeric(
+                        call_data.get("volume", 0), errors="coerce"
+                    )
+                    put_volume = pd.to_numeric(
+                        put_data.get("volume", 0), errors="coerce"
+                    )
+                    call_oi = pd.to_numeric(
+                        call_data.get("open_interest", 0), errors="coerce"
+                    )
+                    put_oi = pd.to_numeric(
+                        put_data.get("open_interest", 0), errors="coerce"
+                    )
+                    call_iv = pd.to_numeric(call_data.get("iv", 0.0), errors="coerce")
+                    put_iv = pd.to_numeric(put_data.get("iv", 0.0), errors="coerce")
+
+                    # ✅ Replace NaN values with defaults
+                    call_volume = 0 if pd.isna(call_volume) else int(call_volume)
+                    put_volume = 0 if pd.isna(put_volume) else int(put_volume)
+                    call_oi = 0 if pd.isna(call_oi) else int(call_oi)
+                    put_oi = 0 if pd.isna(put_oi) else int(put_oi)
+                    call_iv = 0.0 if pd.isna(call_iv) else float(call_iv)
+                    put_iv = 0.0 if pd.isna(put_iv) else float(put_iv)
+
+                    # ✅ Use minimum liquidity between the call and put
+                    min_liquidity = min(call_volume, put_volume, call_oi, put_oi)
+
+                    all_contracts.append(
                         {
                             "strike": strike,
                             "expiration_date": expiration_date,
                             "reference_date": reference_date,
                             "stock_price": stock_price,
+                            "liquidity_score": min_liquidity,  # ✅ Minimum liquidity
+                            "implied_volatility": (call_iv + put_iv)
+                            / 2,  # ✅ Average IV
                         }
                     )
 
-                    # Stop if we've reached the max number of results
-                    if len(selected_contracts) >= max_results:
-                        return selected_contracts
+        # ✅ Sort contracts:
+        # 1️⃣ Closest to ATM (absolute difference between strike & stock price)
+        # 2️⃣ Highest liquidity (min liquidity of call/put)
+        # 3️⃣ Highest implied volatility
+        sorted_contracts = sorted(
+            all_contracts,
+            key=lambda x: (
+                abs(x["strike"] - stock_price),
+                -x["liquidity_score"],
+                -x["implied_volatility"],
+            ),
+        )
 
-        return selected_contracts
+        # ✅ Return the top max_results contracts
+        return sorted_contracts[:max_results]
 
     def _get_historical_spot_price(self, ticker, trade_date, use_open):
         """
