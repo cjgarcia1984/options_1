@@ -6,20 +6,20 @@ data:
 
 backtest:
   reference_date: "2025-03-05"
-  max_contracts_per_ticker: 310
+  max_contracts_per_ticker: 100
   tickers:
-   - AAPL
-   - MSFT
-   - GOOGL
-   - SPY
-   - TSLA
-   - AMZN
-   - FB
-   - NFLX
-   - NVDA
-   - AMD
-   - INTC
-   - QQQ
-   - BABA
-   - BIDU
+   #W- AAPL
+   #W- MSFT
+   #W- GOOGL
+   #W- SPY
+   #W- TSLA
+   #W- AMZN
+   #W- FB
+   #W- NFLX
+   #W- NVDA
+   #W- AMD
+   #W- INTC
+   #W- QQQ
+   #W- BABA
+   #W- BIDU
    - MU

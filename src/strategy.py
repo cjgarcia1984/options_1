@@ -2,11 +2,12 @@ from backtesting import Strategy
 import numpy as np
 import talib
 
+
 class SimpleStraddleStrategy(Strategy):
     hold_period = 3  # Hold for 3 days
     cooldown_period = 1  # Wait 1 day before repurchasing
-    profit_target = 0.20  # 20% profit target
-    stop_loss = -0.10  # 10% stop loss
+    profit_target = 0.5  # 20% profit target
+    stop_loss = -0.25  # 10% stop loss
     min_iv = 0.2  # Minimum implied volatility threshold
     max_iv = 0.7  # Avoid buying options with extreme IV
 
@@ -14,13 +15,15 @@ class SimpleStraddleStrategy(Strategy):
         self.has_bought = False
         self.entry_price = None
         self.entry_time = None
-        self.exit_time = None  
-        self.entry_reason = None  
-        self.exit_reason = None  
+        self.exit_time = None
+        self.entry_reason = None
+        self.exit_reason = None
 
         # Indicators
         self.rsi = self.I(talib.RSI, self.data.Close, timeperiod=14)
-        self.atr = self.I(talib.ATR, self.data.High, self.data.Low, self.data.Close, timeperiod=14)
+        self.atr = self.I(
+            talib.ATR, self.data.High, self.data.Low, self.data.Close, timeperiod=14
+        )
         self.iv = self.data.impliedVolatility
 
     def should_buy(self):
@@ -55,7 +58,9 @@ class SimpleStraddleStrategy(Strategy):
         reasons = []
         price_change = (self.data.Close[-1] - self.entry_price) / self.entry_price
 
-        if self.data.index[-1] >= self.entry_time + np.timedelta64(self.hold_period, "D"):
+        if self.data.index[-1] >= self.entry_time + np.timedelta64(
+            self.hold_period, "D"
+        ):
             reasons.append(f"Hold Period Expired ({self.hold_period} days)")
         if price_change >= self.profit_target:
             reasons.append(f"Profit Target Hit (+{self.profit_target * 100}%)")
@@ -69,7 +74,9 @@ class SimpleStraddleStrategy(Strategy):
     def next(self):
         current_time = self.data.index[-1]
 
-        if self.exit_time and current_time < self.exit_time + np.timedelta64(self.cooldown_period, "D"):
+        if self.exit_time and current_time < self.exit_time + np.timedelta64(
+            self.cooldown_period, "D"
+        ):
             return  # Skip buying if still in cooldown period
 
         if not self.has_bought:

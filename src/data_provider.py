@@ -128,9 +128,26 @@ class DataProvider:
             print("No valid contract data available.")
             return None
 
-        combined_df = pd.concat(
-            dfs, axis=0
-        ).sort_index()  # Use `pd.concat()` instead of `sum()`
+        # ✅ Combine contracts, summing relevant price columns at each timestamp
+        combined_df = pd.concat(dfs, axis=0).sort_index()
+
+        # ✅ Define aggregation rules for numeric & categorical columns
+        aggregation_rules = {
+            "Open": "sum",
+            "High": "sum",
+            "Low": "sum",
+            "Close": "sum",
+            "volume": "sum",
+            "openInterest": "sum",
+            "impliedVolatility": "mean",  # Keep volatility as an average
+            "percentChange": "mean",
+            "change": "mean",
+            "inTheMoney": "last",  # Keep last value
+        }
+
+        # ✅ Drop non-numeric categorical columns that don't make sense after aggregation
+        combined_df = combined_df.groupby(combined_df.index).agg(aggregation_rules)
+
         combined_df.dropna(inplace=True)
 
         # Ensure we only test from the reference date onward
