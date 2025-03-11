@@ -1,0 +1,25 @@
+# config.yaml
+
+data:
+  db_path: "data/options_data.db"
+  results_csv: "data/backtest_results.csv"
+
+backtest:
+  reference_date: "2025-03-05"
+  max_contracts_per_ticker: 310
+  tickers:
+   - AAPL
+   - MSFT
+   - GOOGL
+   - SPY
+   - TSLA
+   - AMZN
+   - FB
+   - NFLX
+   - NVDA
+   - AMD
+   - INTC
+   - QQQ
+   - BABA
+   - BIDU
+   - MU
