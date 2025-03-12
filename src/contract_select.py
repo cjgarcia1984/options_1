@@ -58,7 +58,7 @@ class ContractSelector(ABC):
         if not contracts:
             return []  # No contracts available
 
-        # ✅ Get the stock price based on execution rules
+        #  Get the stock price based on execution rules
         stock_price = (
             self._get_historical_spot_price(ticker, reference_date, self.use_open)
             if not self.live
@@ -73,14 +73,13 @@ class ContractSelector(ABC):
 
         all_contracts = []
 
-        # ✅ Flatten contract dictionary for sorting
         for strike in contracts.keys():
             for expiration_date, contract_data in contracts[strike].items():
                 if "call" in contract_data and "put" in contract_data:
                     call_data = contract_data["call"]
                     put_data = contract_data["put"]
 
-                    # ✅ Convert to numeric safely using `pd.to_numeric(errors="coerce")`
+                    #  Convert to numeric safely using `pd.to_numeric(errors="coerce")`
                     call_volume = pd.to_numeric(
                         call_data.get("volume", 0), errors="coerce"
                     )
@@ -96,7 +95,7 @@ class ContractSelector(ABC):
                     call_iv = pd.to_numeric(call_data.get("iv", 0.0), errors="coerce")
                     put_iv = pd.to_numeric(put_data.get("iv", 0.0), errors="coerce")
 
-                    # ✅ Replace NaN values with defaults
+                    #  Replace NaN values with defaults
                     call_volume = 0 if pd.isna(call_volume) else int(call_volume)
                     put_volume = 0 if pd.isna(put_volume) else int(put_volume)
                     call_oi = 0 if pd.isna(call_oi) else int(call_oi)
@@ -104,7 +103,7 @@ class ContractSelector(ABC):
                     call_iv = 0.0 if pd.isna(call_iv) else float(call_iv)
                     put_iv = 0.0 if pd.isna(put_iv) else float(put_iv)
 
-                    # ✅ Use minimum liquidity between the call and put
+                    #  Use minimum liquidity between the call and put
                     min_liquidity = min(call_volume, put_volume, call_oi, put_oi)
 
                     all_contracts.append(
@@ -113,16 +112,12 @@ class ContractSelector(ABC):
                             "expiration_date": expiration_date,
                             "reference_date": reference_date,
                             "stock_price": stock_price,
-                            "liquidity_score": min_liquidity,  # ✅ Minimum liquidity
+                            "liquidity_score": min_liquidity,  #  Minimum liquidity
                             "implied_volatility": (call_iv + put_iv)
-                            / 2,  # ✅ Average IV
+                            / 2,  #  Average IV
                         }
                     )
 
-        # ✅ Sort contracts:
-        # 1️⃣ Closest to ATM (absolute difference between strike & stock price)
-        # 2️⃣ Highest liquidity (min liquidity of call/put)
-        # 3️⃣ Highest implied volatility
         sorted_contracts = sorted(
             all_contracts,
             key=lambda x: (
@@ -132,7 +127,7 @@ class ContractSelector(ABC):
             ),
         )
 
-        # ✅ Return the top max_results contracts
+        #  Return the top max_results contracts
         return sorted_contracts[:max_results]
 
     def _get_historical_spot_price(self, ticker, trade_date, use_open):
@@ -193,58 +188,3 @@ class ContractSelector(ABC):
         ).fetchone()
         conn.close()
         return result[0] if result else None
-
-
-class StraddleSelector(ContractSelector):
-    def get_available_contracts(self, ticker, reference_date=None):
-        """Fetches available contracts based on historical data (SQLite) or live data (API)."""
-        if self.live:
-            return self._get_live_contracts(ticker)
-        else:
-            return self._get_historical_contracts(ticker, reference_date)
-
-    def _get_historical_contracts(self, ticker, reference_date):
-        """
-        Fetches historical option contracts that exist from the reference date onward.
-
-        :param ticker: Stock ticker symbol.
-        :param reference_date: The date when backtesting starts.
-        :return: Dictionary with contract availability.
-        """
-        conn = self._connect_db()
-        query = """
-            SELECT strike, expiration_date, option_type, volume, openInterest, impliedVolatility
-            FROM options
-            WHERE ticker = ? AND lastTradeDate >= ?
-            GROUP BY strike, expiration_date, option_type
-            HAVING COUNT(*) >= ? AND volume > 0 AND openInterest > 0
-        """
-        rows = conn.execute(
-            query, (ticker, reference_date, self.min_data_points)
-        ).fetchall()
-        conn.close()
-
-        contracts = {}
-        for strike, expiration_date, option_type, volume, open_interest, iv in rows:
-            contracts.setdefault(strike, {}).setdefault(expiration_date, {})[
-                option_type
-            ] = {"volume": volume, "open_interest": open_interest, "iv": iv}
-
-        return contracts
-
-    def _get_live_contracts(self, ticker):
-        """Fetches live option contracts from the broker API."""
-        option_chain = self.api.get_option_chain(ticker)
-        if not option_chain:
-            return {}
-
-        contracts = {}
-        for strike, expirations in option_chain.items():
-            for expiration_date, contract_data in expirations.items():
-                contracts.setdefault(strike, {}).setdefault(expiration_date, {})
-                if "call" in contract_data:
-                    contracts[strike][expiration_date]["call"] = True
-                if "put" in contract_data:
-                    contracts[strike][expiration_date]["put"] = True
-
-        return contracts

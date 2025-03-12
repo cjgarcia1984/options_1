@@ -1,8 +1,9 @@
 import yaml
 import pandas as pd
 from src.backtest_engine import BacktestEngine
-from src.contract_select import StraddleSelector
+from src.straddle_selector import StraddleSelector
 from src.strategy import SimpleStraddleStrategy
+import os
 
 # Load config.yaml
 with open("configs/backtest_config.yaml", "r") as file:
@@ -85,6 +86,7 @@ for ticker in tickers:
 # Save trade results
 if all_results:
     results_df = pd.DataFrame(all_results)
+    os.makedirs(os.path.dirname(results_csv), exist_ok=True)
     results_df.to_csv(results_csv, index=False)
     print(f"Results saved to {results_csv}")
 else:
@@ -95,3 +97,5 @@ if all_summaries:
     summary_df = pd.DataFrame(all_summaries)
     summary_df.to_csv(summary_csv, index=False)
     print(f"Summary stats saved to {summary_csv}")
+
+

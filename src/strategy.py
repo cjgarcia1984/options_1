@@ -8,9 +8,6 @@ class SimpleStraddleStrategy(Strategy):
     base_hold_period = 3  # Default hold period in days
     cooldown_period = 1  # Cooldown before repurchasing
     profit_target = 0.2  # 50% profit target
-    stop_loss = -0.1  # 25% stop loss
-    min_iv = 0.2  # Minimum implied volatility threshold
-    max_iv = 0.7  # Avoid buying options with extreme IV
     base_size = 10  # Base position size
 
     def init(self):
@@ -63,7 +60,9 @@ class SimpleStraddleStrategy(Strategy):
             reasons.append("RSI Oversold")
         if self.rsi[-1] > 70:
             reasons.append("RSI Overbought")
-        if self.atr[-1] > self.atr[-2]:
+        if self.atr[-1] > self.atr[-2]  > self.atr[-3]:
+            reasons.append("Extra Increasing ATR (Volatility)")
+        elif self.atr[-1] > self.atr[-2]:
             reasons.append("Increasing ATR (Volatility)")
 
         return (True, ", ".join(reasons)) if reasons else (False, "")

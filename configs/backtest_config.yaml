@@ -2,24 +2,24 @@
 
 data:
   db_path: "data/options_data.db"
-  results_csv: "data/backtest_results.csv"
+  results_csv: "/mnt/t/results/backtest_results_laptop.csv"
 
 backtest:
   reference_date: "2025-03-05"
-  max_contracts_per_ticker: 100
+  max_contracts_per_ticker: 50
   tickers:
-   #W- AAPL
-   #W- MSFT
-   #W- GOOGL
-   #W- SPY
-   #W- TSLA
-   #W- AMZN
-   #W- FB
-   #W- NFLX
-   #W- NVDA
-   #W- AMD
-   #W- INTC
-   #W- QQQ
-   #W- BABA
-   #W- BIDU
+   - AAPL
+   - MSFT
+   - GOOGL
+   - SPY
+   - TSLA
+   - AMZN
+   - FB
+   - NFLX
+   - NVDA
+   - AMD
+   - INTC
+   - QQQ
+   - BABA
+   - BIDU
    - MU
