@@ -4,10 +4,14 @@
 DESTINATION="/home/chris/options_1/data/options_data.db"
 SOURCE="/mnt/t/options_data.db"
 TEMP_DESTINATION="${DESTINATION}_temp.db"
-LOG_FILE="/home/chris/options_1/logs/sync_log.log"
+LOG_DIR="/home/chris/options_1/logs"
+LOG_FILE="${LOG_DIR}/sync_log.log"
 
 # Ensure the DESTINATION directory exists
 mkdir -p "$(dirname "${DESTINATION}")"
+
+# Ensure the LOG directory exists
+mkdir -p "${LOG_DIR}"
 
 # Copy the working copy to a temporary file in the DESTINATION directory
 cp "${SOURCE}" "${TEMP_DESTINATION}"
