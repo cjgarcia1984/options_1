@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define log file
-LOG_FILE="$HOME/options_1/fetch.log"
+LOG_FILE="$HOME/options_1/logs/fetch.log"
 MAX_LINES=10000
 
 # Run the fetch script and append output to log
