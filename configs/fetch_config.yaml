@@ -1,4 +1,4 @@
-database: data/options_data.db
+database: /home/chris/options_1/data/options_data.db
 output_folder: /home/chris/options_1/data
 stocks:
   - AAPL
