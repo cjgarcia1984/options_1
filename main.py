@@ -56,9 +56,7 @@ for ticker in tickers:
             SimpleStraddleStrategy, contracts, reference_date=reference_date
         )
         if result:
-            if (
-                result and result["results"] is not None
-            ):  # ✅ Check if results exist before accessing
+            if result and result["results"] is not None:
                 for i, trade in enumerate(result["results"].to_dict(orient="records")):
                     trade["ticker"] = ticker
                     trade["strike"] = contract["strike"]
@@ -97,5 +95,3 @@ if all_summaries:
     summary_df = pd.DataFrame(all_summaries)
     summary_df.to_csv(summary_csv, index=False)
     print(f"Summary stats saved to {summary_csv}")
-
-
